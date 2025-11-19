@@ -67,7 +67,7 @@ beanpath (beanpath-core)/
 
 ## **4. Использование Kaggle API**
 
-Чтобы скачивать датасеты с Kaggle, необходимо установить пакет **kaggle** (как и указано в requirements). Полученный при создании API-токена файл kaggle.json нужно поместить в папку `~/.kaggle/` или указать переменными окружения `KAGGLE_USERNAME` и `KAGGLE_KEY` (их можно хранить в .env).
+Чтобы скачивать датасеты с **Kaggle**, необходимо установить пакет `kaggle`. Полученный при создании API-токена файл `kaggle.json` нужно поместить в папку `~/.kaggle/` или указать переменными окружения `KAGGLE_USERNAME` и `KAGGLE_KEY` (их можно хранить в `.env`).
 
 **Run the script:**
 `python -m src.utils.01_data_acquisition` *(data_acquisition.py)*
