@@ -22,6 +22,7 @@
 * Jupyter Notebook внутри VSCode 
 * PostgreSQL 
 * Python
+* pgAdmin 4
 
 ---
 
