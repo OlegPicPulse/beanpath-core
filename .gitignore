@@ -14,10 +14,13 @@ __pycache__/
 # Jupyter Notebook
 *.ipynb_checkpoints/
 
+# System files
+.DS_Store
+*.DS_Store
+**/.DS_Store
+
+# Data files
 data/*
 !data/**/.gitkeep 
 !data/raw/third_wave_coffee_shop.csv
 !data/raw/synthetic_third_wave_q3.csv
-
-# Системные файлы
-.DS_Store
