@@ -1,0 +1,23 @@
+# Переменные окружения и конфигурации
+.envrc
+.env
+.env.local
+.venv/
+venv/
+
+kaggle.json
+
+*.pyc
+__pycache__/
+*.ipynb_checkpoints/
+
+# Jupyter Notebook
+*.ipynb_checkpoints/
+
+data/*
+!data/**/.gitkeep 
+!data/raw/third_wave_coffee_shop.csv
+!data/raw/synthetic_third_wave_q3.csv
+
+# Системные файлы
+.DS_Store
