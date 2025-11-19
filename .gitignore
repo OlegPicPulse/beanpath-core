@@ -24,3 +24,4 @@ data/*
 !data/**/.gitkeep 
 !data/raw/third_wave_coffee_shop.csv
 !data/raw/synthetic_third_wave_q3.csv
+
