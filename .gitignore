@@ -17,10 +17,7 @@ __pycache__/
 .DS_Store
 
 # Data files
-data/*
+data/**
 !data/**/.gitkeep 
 !data/raw/third_wave_coffee_shop.csv
 !data/raw/synthetic_third_wave_q3.csv
-!data/Data_Generation_Synthetic_Coffee_Shop.md
-!data/synthetic_dataset.py
-
