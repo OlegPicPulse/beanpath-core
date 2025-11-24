@@ -78,7 +78,7 @@ beanpath (beanpath-core)/
 
 ## **5. Данные**
 
-[`Data_Generation_Synthetic_Coffee_Shop.md`](data/Data_Generation_Synthetic_Coffee_Shop.md)
+[`Data_Generation_Synthetic_Coffee_Shop.md`](Data_Generation_Synthetic_Coffee_Shop.md)
 
 *   **Источник:** Синтетические логи продаж из файла [`third_wave_coffee_shop.csv`](data/raw/third_wave_coffee_shop.csv)
 *   **Период:** Июль – сентябрь 2025 г.
