@@ -185,3 +185,67 @@ FROM unique_tx
 GROUP BY customer_id
 ORDER BY total_spent DESC
 LIMIT 10;
+
+-- Анализ распределения сумм чеков
+WITH check_summary AS (
+  SELECT
+    transaction_id,
+    MAX(total_cost) AS check_amount
+  FROM public.third_wave_coffee_shop
+  GROUP BY transaction_id
+  HAVING MAX(total_cost) = MIN(total_cost)  
+),
+stats AS (
+  SELECT
+    PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY check_amount) AS q1,
+    PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY check_amount) AS median,
+    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY check_amount) AS q3,
+    MAX(check_amount) AS max_amount
+  FROM check_summary
+)
+SELECT
+  q1,
+  median,
+  q3,
+  q3 - q1 AS iqr,
+  q3 + 1.5 * (q3 - q1) AS upper_bound,
+  max_amount
+FROM stats;
+
+-- Инсайдеры: самые большие чеки, попавшие под удаление
+WITH check_summary AS (
+  SELECT
+    transaction_id,
+    MAX(total_cost) AS check_amount,
+    COUNT(*) AS items_count,
+    STRING_AGG(coffee_name, ', ') AS items_list,
+    MIN(sale_date) AS sale_date,
+    MIN(time_of_day) AS time_of_day
+  FROM public.third_wave_coffee_shop
+  GROUP BY transaction_id
+  HAVING MAX(total_cost) = MIN(total_cost)
+),
+iqr AS (
+  SELECT
+    PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY check_amount) AS q1,
+    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY check_amount) AS q3
+  FROM check_summary
+),
+outliers AS (
+  SELECT
+    cs.*,
+    i.q3 + 1.5 * (i.q3 - i.q1) AS upper_bound
+  FROM check_summary cs
+  CROSS JOIN iqr i
+  WHERE cs.check_amount > i.q3 + 1.5 * (i.q3 - i.q1)
+)
+SELECT
+  transaction_id,
+  check_amount,
+  items_count,
+  items_list,
+  sale_date,
+  time_of_day,
+  ROUND(upper_bound::NUMERIC, 0) AS upper_bound  
+FROM outliers
+ORDER BY check_amount DESC;
