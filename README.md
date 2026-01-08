@@ -109,6 +109,7 @@ beanpath (beanpath-core)/
 ![Распределение заказов по количеству напитков](/docs/figures/orders_count.png)
 ![Визуализация распределения цен (drink_price и total_cost)](/docs/figures/01_coffee_revenue.png)
 ![Визуализация распределения цен (drink_price и total_cost)](/docs/figures/02_coffee_revenue.png)
+![Количество проданных напитков, выручка](/docs/figures/piechart_revenue_share.png)
 
 #### **Ценовые распределения**
 
@@ -132,6 +133,7 @@ beanpath (beanpath-core)/
 
 ![Анализ по дням недели (is_weekend и day_name)](/docs/figures/is_weekend&day_name.png)
 ![Анализ по дням недели (is_weekend и day_name)](/docs/figures/heatmap.png)
+![Временной анализ (нагрузка и планирование персонала)](docs/figures/hourly_sales.png)
 
 #### **Способы оплаты**
 
@@ -166,5 +168,7 @@ beanpath (beanpath-core)/
 *   **Дополнительные факторы:** Анализ влияния мероприятий (каппинги, dj-сеты) на продажи и изучение сопутствующих товаров в чеке (например, "кофе + круассан").
 
 [Сводный отчет по анализу](notebooks/third_wave_coffee_analysis.ipynb)
+
+[Продолжение исследования датасета](notebooks/00_toolbox.ipynb)
 
 [Обзор бизнес-модели кофеен третьей волны (Specialty Coffee) на 2025-2026 гг.](specialty_coffee.md)
