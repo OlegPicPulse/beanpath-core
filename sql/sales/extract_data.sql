@@ -414,3 +414,153 @@ ORDER BY
         WHEN 'Saturday'  THEN 6
         WHEN 'Sunday'    THEN 7
     END;
+
+-- Подсчёт количества проданных единиц каждого напитка по неделям
+SELECT
+    date_trunc('week', sale_date::date) AS week_start,
+    coffee_name,
+    COUNT(*) AS units_sold,
+    SUM(COUNT(*)) OVER (PARTITION BY date_trunc('week', sale_date::date)) AS total_units_week,
+    ROUND(
+        COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY date_trunc('week', sale_date::date)),
+        2
+    ) AS percentage
+FROM
+    third_wave_coffee_shop
+GROUP BY
+    week_start,
+    coffee_name
+ORDER BY
+    week_start,
+    units_sold DESC;
+
+-- Анализ за весь период (июль-сентябрь 2025)
+WITH unique_tx AS (
+    SELECT DISTINCT ON (transaction_id)
+        transaction_id,
+        total_cost
+    FROM third_wave_coffee_shop
+    ORDER BY transaction_id
+),
+stats_raw AS (
+    SELECT
+        AVG(total_cost) AS avg_check,
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY total_cost) AS median_check,
+        COUNT(*) AS n_transactions
+    FROM unique_tx
+),
+stats_final AS (
+    SELECT
+        ROUND(avg_check::NUMERIC, 2) AS avg_check,
+        ROUND(median_check::NUMERIC, 2) AS median_check,
+        n_transactions
+    FROM stats_raw
+)
+SELECT
+    avg_check,
+    median_check,
+    ROUND((avg_check - median_check)::NUMERIC, 2) AS avg_median_diff,
+    ROUND(
+        ((avg_check - median_check) / NULLIF(median_check, 0))::NUMERIC * 100,
+        2
+    ) AS diff_percent,
+    n_transactions,
+    CASE
+        WHEN ABS(avg_check - median_check) > median_check * 0.5
+        THEN 'Внимание: возможны выбросы'
+        ELSE 'Распределение нормальное'
+    END AS data_quality_note
+FROM stats_final;
+
+ -- Выручка по дням + динамика vs вчера
+ WITH daily_revenue AS (
+	SELECT
+		sale_date,
+		SUM(total_cost) AS revenue
+	FROM (
+		SELECT DISTINCT ON (transaction_id)
+			transaction_id,
+			sale_date,
+			total_cost
+		FROM third_wave_coffee_shop
+		ORDER BY transaction_id
+	) AS unique_tx
+	GROUP BY sale_date
+	ORDER BY sale_date
+)
+SELECT
+	sale_date,
+	revenue,
+	LAG(revenue, 1) OVER (ORDER BY sale_date) AS prev_day_revenue,
+	ROUND(
+		(revenue - LAG(revenue, 1) OVER (ORDER BY sale_date))
+		/ NULLIF(LAG(revenue, 1) OVER (ORDER BY sale_date), 0) * 100,
+		2
+	) AS revenue_change_pct
+FROM daily_revenue;
+
+-- Вместо DISTINCT ON...
+SELECT
+	transaction_id,
+	sale_date,
+	MAX(total_cost) AS total_cost
+FROM third_wave_coffee_shop
+GROUP BY transaction_id, sale_date
+
+-- Средний чек по дням
+WITH unique_tx AS (
+	SELECT DISTINCT ON (transaction_id)
+		transaction_id,
+		sale_date,
+		total_cost
+	FROM third_wave_coffee_shop
+	ORDER BY transaction_id
+)
+SELECT
+	sale_date,
+	ROUND(AVG(total_cost), 2) AS avg_check
+FROM unique_tx
+GROUP BY sale_date
+ORDER BY sale_date;
+
+-- Количество чеков (трафик) по дням
+SELECT
+	sale_date,
+	COUNT(DISTINCT transaction_id) AS n_transactions
+FROM third_wave_coffee_shop
+GROUP BY sale_date
+ORDER BY sale_date;
+
+-- Динамика выручки по аналогичным дням недели
+WITH unique_tx AS (
+    SELECT DISTINCT ON (transaction_id)
+        transaction_id,
+        sale_date,
+        total_cost
+    FROM third_wave_coffee_shop
+    ORDER BY transaction_id
+),
+weekly_dow AS (
+    SELECT
+        EXTRACT(ISODOW FROM sale_date) AS day_of_week_num,  -- 1=Mon, 7=Sun
+        DATE_TRUNC('week', sale_date)::DATE AS week_start,  -- понедельник
+        SUM(total_cost) AS weekly_dow_revenue
+    FROM unique_tx
+    GROUP BY 1, 2
+)
+SELECT
+    day_of_week_num,
+    TO_CHAR(week_start, 'YYYY-MM-DD') AS week_start,
+    weekly_dow_revenue,
+    LAG(weekly_dow_revenue, 1) OVER (
+        PARTITION BY day_of_week_num
+        ORDER BY week_start
+    ) AS prev_week_revenue,
+    ROUND(
+        (weekly_dow_revenue - LAG(weekly_dow_revenue, 1) OVER w) 
+        / NULLIF(LAG(weekly_dow_revenue, 1) OVER w, 0) * 100,
+        2
+    ) AS weekly_growth_pct
+FROM weekly_dow
+WINDOW w AS (PARTITION BY day_of_week_num ORDER BY week_start)
+ORDER BY day_of_week_num, week_start;
