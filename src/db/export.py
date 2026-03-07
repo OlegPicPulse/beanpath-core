@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 from loguru import logger
 
-# Импортируем твою существующую функцию
+# Импортируем функцию
 from src.db.queries import run_query
 
 # Определяем пути

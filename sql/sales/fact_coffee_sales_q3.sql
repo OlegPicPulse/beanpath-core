@@ -197,3 +197,37 @@ FROM (
     LIMIT 4000  -- генерируем с запасом
 ) AS sub
 LIMIT 3547; 
+
+
+WITH user_cohorts AS (
+    SELECT useer_id, DATE_TRUNC('month', MIN(order_date)
+) AS cohort_month
+FROM orders GROUP BY 1
+),
+order_margings AS (
+    SELECT
+        o.user_id,
+        o.order_date,
+        (o.amount - (p.unit_cost *.quantity)) AS net_margin
+    FROM order o
+    JOIN products p ON o.product_id = p.id
+),
+cumulative_margin AS (
+    SELECT
+        u.cohort_month,
+        DATE_TRUNC('month', om.order_date) AS margin_month,
+        SUM(om.net_margin) AS monthly_net_profit,
+        COUNT(DISTINCT u.user_id) OVER(PARTITION BY u.cohort_month) AS cohort_size
+    FROM order_margins om
+    JOIN user_cohorts u ON om.user_id = u.user_id
+    GROUP BY 1, 2, user_id    
+)
+SELECT
+    cohort_month,
+    margin_month,
+    ROUND(SUM(SUM(monthly_net_profit)) OVER (
+        PARTITION BY cohort_month ORDER BY marging_month
+    ) / MAX(cohort_size), 2) AS ltv_margin
+FROM cumulative_margin
+GROUP B 1, 2
+ORDER BY 1, 2;
