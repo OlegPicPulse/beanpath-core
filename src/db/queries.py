@@ -11,7 +11,7 @@ def load_csv_to_postgres(file_path, table_name):
             f"@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}"
         )
         df = pd.read_csv(file_path)
-        df.to_sql(table_name, engine, if_exists="replace", index=False)
+        df.to_sql(table_name, engine, if_exists="append", index=False)
         logger.info(f"Loaded {len(df)} rows into {table_name}")
     except Exception as e:
         logger.error(f"Failed to load CSV to PostgreSQL: {e}")
