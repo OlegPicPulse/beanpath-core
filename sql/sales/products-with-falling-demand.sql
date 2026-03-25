@@ -49,7 +49,6 @@ LIMIT 100;
 -- ЦЕЛЬ: Выявить товары, где продажи снизились И находятся ниже средней нормы
 -- ИСПОЛЬЗОВАНИЕ: Ежедневный мониторинг ассортимента для отдела закупок/продаж
 
-
 WITH daily_sales AS (
 
     -- ШАГ 1: Агрегация продаж по дням
@@ -123,7 +122,7 @@ ORDER BY sale_date DESC, diff ASC   -- Сначала свежие даты, с�
 LIMIT 1000;                         -- Ограничиваем вывод для удобства
 
 
--- Cоздания тестовой базы данных
+-- СОЗДАНИЕ ТЕСТОВОЙ БАЗЫ ДЫННЫХ
 
 -- 1. ОЧИСТКА (на случай повторного запуска)
 DROP TABLE IF EXISTS inventory_log CASCADE;
@@ -242,3 +241,163 @@ LEFT JOIN inventory_log inv
     ON s.product_id = inv.product_id 
     AND s.sale_date::DATE = inv.date
 ORDER BY s.sale_date DESC;
+
+
+-- ОБОРАЧИВАЕМОСТЬ 
+WITH sales_90d AS (
+    -- ШАГ 1: Продажи за последние 90 дней
+    SELECT
+        p.product_id,
+        p.category,
+        p.model_name,
+        COALESCE(SUM(s.quantity), 0) AS total_sold_90d,
+        ROUND(COALESCE(SUM(s.quantity), 0) / 90.0, 2) AS avg_daily_sales
+    FROM products p
+    LEFT JOIN sales s ON p.product_id = s.product_id
+        AND s.sale_date >= (SELECT MAX(sale_date) - INTERVAL '90 days' FROM sales)
+    GROUP BY p.product_id, p.category, p.model_name    
+),
+
+inventory_avg AS (
+    -- ШАГ 2: Средний запас за 90 дней
+    SELECT 
+        product_id,
+        ROUND(AVG(stock_on_hand), 2) AS avg_stock_90d
+    FROM inventory_log
+    WHERE date >= (SELECT MAX(date) - INTERVAL '90 days' FROM inventory_log)
+      AND operation_type = 'snapshot'
+    GROUP BY product_id 
+),
+
+inventory_current AS (
+    -- ШАГ 3: Текущий остаток
+    SELECT DISTINCT ON (product_id)
+        product_id,
+        stock_on_hand AS current_stock
+    FROM inventory_log
+    WHERE operation_type = 'snapshot'
+    ORDER BY product_id, date DESC
+),
+
+metrics AS (
+    -- ШАГ 4: Объединение и предварительные расчеты
+    SELECT 
+        s.*,
+        ic.current_stock,
+        ia.avg_stock_90d,
+        ROUND(ic.current_stock / NULLIF(s.avg_daily_sales, 0), 0) AS days_of_supply_calc
+    FROM sales_90d s
+    LEFT JOIN inventory_avg ia ON s.product_id = ia.product_id
+    LEFT JOIN inventory_current ic ON s.product_id = ic.product_id
+)
+
+-- ШАГ 5: Финальная презентация
+SELECT 
+    category AS "Категория",
+    model_name AS "Товар",
+    COALESCE(current_stock, 0) AS "Текущий_остаток",
+    COALESCE(avg_stock_90d, 0) AS "Средний_запас_90дн",
+    total_sold_90d AS "Продано_шт",
+    avg_daily_sales AS "Средние_продажи_в_день",
+    
+    -- Оборачиваемость
+    CASE 
+        WHEN avg_stock_90d > 0 
+        THEN ROUND(total_sold_90d / avg_stock_90d, 2)
+        ELSE 0 
+    END AS "Оборачиваемость",
+    
+    -- Дней запаса
+    CASE 
+        WHEN avg_daily_sales > 0 
+        THEN days_of_supply_calc 
+        ELSE 999 
+    END AS "Дней_запаса",
+    
+    -- Статус
+    CASE 
+        WHEN COALESCE(current_stock, 0) = 0 THEN 'Out of Stock'
+        WHEN COALESCE(avg_daily_sales, 0) = 0 THEN 'Нет продаж'
+        WHEN days_of_supply_calc <= 7 THEN 'Дефицит'
+        WHEN days_of_supply_calc > 90 THEN 'Затоваривание'
+        ELSE 'Норма'
+    END AS "Статус"
+    
+FROM metrics
+ORDER BY "Дней_запаса" ASC;
+
+
+--
+
+-- ABC-анализ + Оборачиваемость = Приоритеты закупок 
+-- 
+WITH sales_period AS (
+    -- Определяем период: последние 90 дней от последней продажи
+    SELECT MAX(sale_date) - INTERVAL '90 days' AS period_start
+    FROM sales
+),
+
+product_revenue AS (
+    -- Шаг 1: Выручка за период
+    SELECT 
+        p.product_id,
+        p.model_name,
+        p.category,
+        SUM(s.quantity * p.sale_price) AS total_revenue,
+        SUM(s.quantity) AS total_quantity,
+        COUNT(DISTINCT s.sale_date::date) AS active_days
+    FROM products p
+    JOIN sales s ON p.product_id = s.product_id
+    CROSS JOIN sales_period sp
+    WHERE s.sale_date >= sp.period_start
+    GROUP BY p.product_id, p.model_name, p.category
+),
+
+ranked AS (
+    -- Шаг 2: Ранжирование и кумулятивные суммы
+    SELECT 
+        *,
+        ROW_NUMBER() OVER (ORDER BY total_revenue DESC) AS rank,
+        SUM(total_revenue) OVER () AS grand_total,
+        SUM(total_revenue) OVER (ORDER BY total_revenue DESC) AS cumulative_revenue
+    FROM product_revenue
+),
+
+with_pct AS (
+    -- Шаг 3: Расчет процентов
+    SELECT 
+        *,
+        ROUND(total_revenue / NULLIF(grand_total, 0) * 100, 2) AS revenue_share_pct,
+        ROUND(cumulative_revenue / NULLIF(grand_total, 0) * 100, 2) AS cumulative_pct
+    FROM ranked
+)
+
+-- Шаг 4: Финальный отчет 
+SELECT 
+    rank AS "Ранг",
+    product_id AS "ID",
+    model_name AS "Товар",
+    category AS "Категория",
+    total_revenue AS "Выручка_руб",
+    revenue_share_pct AS "Доля_%",
+    cumulative_pct AS "Накопленная_%",
+    CASE 
+        WHEN cumulative_pct <= 80 THEN 'A'
+        WHEN cumulative_pct <= 95 THEN 'B'
+        ELSE 'C'
+    END AS "ABC_категория",
+    total_quantity AS "Продано_шт",
+    active_days AS "Дней_с_продажами",
+    CASE 
+        WHEN cumulative_pct <= 80 THEN 'ЕЖЕДНЕВНО'
+        WHEN cumulative_pct <= 95 THEN 'Еженедельно'
+        ELSE 'ежемесячно'
+    END AS "Рекомендация_по_контролю",
+    -- Дополнительная рекомендация по управлению запасами
+    CASE 
+        WHEN cumulative_pct <= 80 THEN 'Высокий приоритет, страховой запас +50%'
+        WHEN cumulative_pct <= 95 THEN 'Средний приоритет, страховой запас +30%'
+        ELSE 'Низкий приоритет, страховой запас +15%'
+    END AS "Рекомендация_по_запасам"
+FROM with_pct
+ORDER BY rank;
