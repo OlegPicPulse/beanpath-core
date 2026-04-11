@@ -106,17 +106,17 @@ beanpath (beanpath-core)/
 *   **Средняя цена напитка:** ≈ 337 ₽.
 *   **Наполняемость чека:** В среднем 1-2 напитка на заказ.
 
-![Распределение заказов по количеству напитков](/docs/figures/orders_count.png)
-![Визуализация распределения цен (drink_price и total_cost)](/docs/figures/01_coffee_revenue.png)
-![Визуализация распределения цен (drink_price и total_cost)](/docs/figures/02_coffee_revenue.png)
-![Количество проданных напитков, выручка](/docs/figures/piechart_revenue_share.png)
+![Распределение заказов по количеству напитков](docs/figures/orders_count.png)
+![Визуализация распределения цен (drink_price и total_cost)](docs/figures/01_coffee_revenue.png)
+![Визуализация распределения цен (drink_price и total_cost)](docs/figures/02_coffee_revenue.png)
+![Количество проданных напитков, выручка](docs/figures/piechart_revenue_share.png)
 
 #### **Ценовые распределения**
 
 *   Гистограмма цен на напитки имеет несколько пиков, что соответствует различным ценовым категориям напитков.
 *   Диаграмма boxplot для сумм чеков показывает относительно небольшой разброс (межквартильный диапазон: Q1 = 320 ₽, Q3 = 580 ₽).
 
-![Визуализация распределения цен (drink_price и total_cost)](/docs/figures/drink_price&total_cost.png)
+![Визуализация распределения цен (drink_price и total_cost)](docs/figures/drink_price&total_cost.png)
 
 #### **Динамика продаж по времени**
 
@@ -125,14 +125,15 @@ beanpath (beanpath-core)/
 *   **Вечерние продажи:** 453 транзакции с выручкой ~217 550 ₽.
 *   **Средний чек по времени суток:** Вечером (~480 ₽) и утром (~475 ₽) средний чек немного выше, чем днем (≈465 ₽).
 
-![Продажи по времени дня (time_of_day)](/docs/figures/time_of_day.png)
-
+![Продажи по времени дня (time_of_day)](docs/figures/time_of_day.png)
+![Выручка в час (Revenue per Hour), жестко фиксируя временные интервалы](docs/figures/segments_dow_pivot_table.png)
 #### **Продажи по дням недели**
 
 *   Наибольшая активность продаж наблюдается в будние дни. В выходные количество заказов снижается.
 
-![Анализ по дням недели (is_weekend и day_name)](/docs/figures/is_weekend&day_name.png)
-![Анализ по дням недели (is_weekend и day_name)](/docs/figures/heatmap.png)
+![Анализ по дням недели (is_weekend и day_name)](docs/figures/is_weekend&day_name.png)
+![Анализ по дням недели (is_weekend и day_name)](docs/figures/heatmap.png)
+![Пиковая нагрузка (транзакций/час)](docs/figures/staffing_load_matrix.png)
 ![Временной анализ (нагрузка и планирование персонала)](docs/figures/hourly_sales.png)
 
 #### **Способы оплаты**
@@ -140,7 +141,7 @@ beanpath (beanpath-core)/
 *   **Банковские карты:** 71% выручки (2515 чеков на сумму 1 187 240 ₽).
 *   **Наличные:** 29% выручки (1032 чека на сумму 480 810 ₽).
 
-![Методы оплаты](/docs/figures/payment_method.png)
+![Методы оплаты](docs/figures/payment_method.png)
 
 #### **Анализ клиентов**
 
@@ -149,7 +150,7 @@ beanpath (beanpath-core)/
 *   Средний чек у топ-клиентов составляет 600–750 ₽ за заказ.
 *   Выявлена группа регулярных покупателей, для которых целесообразно внедрение программы лояльности.
 
- ![Анализ клиентов (топ-клиенты по тратам)](/docs/figures/customer_id.png)
+ ![Анализ клиентов (топ-клиенты по тратам)](docs/figures/customer_id.png)
 
 ## **8. Выводы и практическая ценность**
 
