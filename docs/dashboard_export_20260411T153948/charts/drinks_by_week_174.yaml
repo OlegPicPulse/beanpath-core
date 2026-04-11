@@ -1,0 +1,83 @@
+slice_name: drinks_by_week
+description: null
+certified_by: null
+certification_details: null
+viz_type: echarts_timeseries_line
+params:
+  datasource: 26__table
+  viz_type: echarts_timeseries_line
+  slice_id: 174
+  matrixify_show_column_headers: true
+  matrixify_mode_columns: metrics
+  matrixify_dimension_selection_mode_columns: members
+  matrixify_dimension_columns:
+    dimension: ''
+    values: []
+  matrixify_topn_value_columns: 10
+  matrixify_topn_order_columns: desc
+  matrixify_show_row_labels: true
+  matrixify_mode_rows: metrics
+  matrixify_dimension_selection_mode_rows: members
+  matrixify_dimension_rows:
+    dimension: ''
+    values: []
+  matrixify_topn_value_rows: 10
+  matrixify_topn_order_rows: desc
+  matrixify_row_height: 300
+  matrixify_fit_columns_dynamically: true
+  matrixify_charts_per_row: 4
+  x_axis: sale_date
+  time_grain_sqla: P1W
+  metrics:
+  - count
+  groupby:
+  - coffee_name
+  adhoc_filters:
+  - clause: WHERE
+    comparator: No filter
+    expressionType: SIMPLE
+    operator: TEMPORAL_RANGE
+    subject: sale_date
+  row_limit: 10000
+  truncate_metric: true
+  show_empty_columns: true
+  comparison_type: values
+  annotation_layers: []
+  forecastPeriods: 10
+  forecastInterval: 0.8
+  x_axis_title_margin: 15
+  y_axis_title_margin: 30
+  y_axis_title_position: Left
+  sort_series_type: sum
+  sort_series_ascending: true
+  color_scheme: supersetColors
+  show_value: false
+  stack: null
+  area: false
+  markerEnabled: false
+  zoomable: false
+  minorTicks: false
+  show_legend: false
+  x_axis_time_format: smart_date
+  xAxisLabelInterval: auto
+  force_max_interval: false
+  rich_tooltip: true
+  showTooltipTotal: true
+  showTooltipPercentage: false
+  tooltipSortByMetric: false
+  tooltipTimeFormat: smart_date
+  y_axis_format: SMART_NUMBER
+  logAxis: false
+  minorSplitLine: false
+  truncateXAxis: true
+  truncateYAxis: false
+  extra_form_data: {}
+  dashboards:
+  - 17
+query_context: '{"datasource":{"id":26,"type":"table"},"force":false,"queries":[{"filters":[{"col":"sale_date","op":"TEMPORAL_RANGE","val":"No
+  filter"}],"extras":{"time_grain_sqla":"P1W","having":"","where":""},"applied_time_extras":{},"columns":[{"timeGrain":"P1W","columnType":"BASE_AXIS","sqlExpression":"sale_date","label":"sale_date","expressionType":"SQL","isColumnReference":true},"coffee_name"],"metrics":["count"],"orderby":[["count",false]],"annotation_layers":[],"row_limit":10000,"series_columns":["coffee_name"],"series_limit":0,"group_others_when_limit_reached":false,"order_desc":true,"url_params":{},"custom_params":{},"custom_form_data":{},"time_offsets":[],"post_processing":[{"operation":"pivot","options":{"index":["sale_date"],"columns":["coffee_name"],"aggregates":{"count":{"operator":"mean"}},"drop_missing_columns":false}},{"operation":"rename","options":{"columns":{"count":null},"level":0,"inplace":true}},{"operation":"flatten"}]}],"form_data":{"datasource":"26__table","viz_type":"echarts_timeseries_line","slice_id":174,"matrixify_show_column_headers":true,"matrixify_mode_columns":"metrics","matrixify_dimension_selection_mode_columns":"members","matrixify_dimension_columns":{"dimension":"","values":[]},"matrixify_topn_value_columns":10,"matrixify_topn_order_columns":"desc","matrixify_show_row_labels":true,"matrixify_mode_rows":"metrics","matrixify_dimension_selection_mode_rows":"members","matrixify_dimension_rows":{"dimension":"","values":[]},"matrixify_topn_value_rows":10,"matrixify_topn_order_rows":"desc","matrixify_row_height":300,"matrixify_fit_columns_dynamically":true,"matrixify_charts_per_row":4,"x_axis":"sale_date","time_grain_sqla":"P1W","metrics":["count"],"groupby":["coffee_name"],"adhoc_filters":[{"clause":"WHERE","comparator":"No
+  filter","expressionType":"SIMPLE","operator":"TEMPORAL_RANGE","subject":"sale_date"}],"row_limit":10000,"truncate_metric":true,"show_empty_columns":true,"comparison_type":"values","annotation_layers":[],"forecastPeriods":10,"forecastInterval":0.8,"x_axis_title_margin":15,"y_axis_title_margin":30,"y_axis_title_position":"Left","sort_series_type":"sum","sort_series_ascending":true,"color_scheme":"supersetColors","show_value":false,"stack":null,"area":false,"markerEnabled":false,"zoomable":false,"minorTicks":false,"show_legend":false,"x_axis_time_format":"smart_date","xAxisLabelInterval":"auto","force_max_interval":false,"rich_tooltip":true,"showTooltipTotal":true,"showTooltipPercentage":false,"tooltipSortByMetric":false,"tooltipTimeFormat":"smart_date","y_axis_format":"SMART_NUMBER","logAxis":false,"minorSplitLine":false,"truncateXAxis":true,"truncateYAxis":false,"extra_form_data":{},"dashboards":[17],"force":false,"result_format":"json","result_type":"full"},"result_format":"json","result_type":"full"}'
+cache_timeout: null
+uuid: ce9aaa75-f5ce-4991-9134-2e3184c7e882
+version: 1.0.0
+dataset_uuid: aba25bed-718d-4689-885e-d9c85a33e649

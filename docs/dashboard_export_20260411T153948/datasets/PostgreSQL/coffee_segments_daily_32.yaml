@@ -1,0 +1,129 @@
+table_name: coffee_segments_daily
+main_dttm_col: null
+description: null
+default_endpoint: null
+offset: 0
+cache_timeout: null
+catalog: postgres
+schema: public
+sql: "\tWITH unique_transactions AS (\n\t-- 1. \u0414\u0435\u0434\u0443\u043F\u043B\
+  \u0438\u043A\u0430\u0446\u0438\u044F (\u0447\u0435\u043A\u0438)\n\tSELECT\n\t\t\
+  sale_date,\n\t\tday_name,\n\t\t-- \u0414\u043B\u044F \u043F\u0440\u0430\u0432\u0438\
+  \u043B\u044C\u043D\u043E\u0439 \u0441\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u043A\
+  \u0438 \u0434\u043D\u0435\u0439 \u043D\u0435\u0434\u0435\u043B\u0438 \u0432 \u0433\
+  \u0440\u0430\u0444\u0438\u043A\u0435 (1=Mon, 5=Fri)\n\t\tEXTRACT(ISODOW FROM sale_date::date)\
+  \ as day_num,\n\t\ttransaction_id,\n\t\tMAX(total_cost) as check_amount,\n\t\t--\
+  \ 2. \u0421\u0435\u0433\u043C\u0435\u043D\u0442\u0430\u0446\u0438\u044F\n\t\tCASE\n\
+  \t\t\tWHEN sale_time::time BETWEEN '11:00:00' AND '13:59:59' THEN '1. Lunch (11-14)'\n\
+  \t\t\tWHEN sale_time::time BETWEEN '14:00:00' AND '16:59:59' THEN '2. Dead (14-17)'\n\
+  \t\t\tWHEN sale_time::time >= '17:00:00' THEN '3. Evening (17-20)'\n\t\tEND as time_segment\n\
+  \tFROM third_wave_coffee_shop\n\tWHERE is_weekend = FALSE\t    -- \u0422\u043E\u043B\
+  \u044C\u043A\u043E \u0431\u0443\u0434\u043D\u0438\n\t  AND sale_time >= '11:00:00'\t\
+  -- \u0423\u0431\u0438\u0440\u0430\u0435\u043C \u0443\u0442\u0440\u043E\n\tGROUP\
+  \ BY 1, 2, 3, 4, sale_time\n)\nSELECT\n\tday_name,\n\tday_num,\n\ttime_segment,\n\
+  \t-- \u041C\u0435\u0442\u0440\u0438\u043A\u0438\n\tCOUNT(DISTINCT transaction_id)\
+  \ as total_checks,\n\tSUM(check_amount) as total_revenue,\n\t-- \u0412\u044B\u0440\
+  \u0443\u0447\u043A\u0430 \u0432 \u0447\u0430\u0441 (\u0442\u0430\u043A \u043A\u0430\
+  \u043A \u043A\u0430\u0436\u0434\u044B\u0439 \u0441\u043B\u043E\u0442 = 3 \u0447\u0430\
+  \u0441\u0430)\n\tROUND(SUM(check_amount) / 3.0, 2) as revenue_per_hour\nFROM unique_transactions\n\
+  WHERE time_segment IS NOT NULL\nGROUP BY 1, 2, 3\nORDER BY day_num, time_segment;\n"
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+normalize_columns: false
+always_filter_main_dttm: false
+folders: null
+uuid: 2d49fd7a-791d-42d9-a219-c7111d0993b9
+metrics:
+- metric_name: count
+  verbose_name: COUNT(*)
+  metric_type: count
+  expression: COUNT(*)
+  description: null
+  d3format: null
+  currency: null
+  extra: null
+  warning_text: null
+columns:
+- column_name: revenue_per_hour
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: DECIMAL
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: null
+- column_name: day_num
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: DECIMAL
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: null
+- column_name: total_revenue
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: DECIMAL
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: null
+- column_name: total_checks
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: LONGINTEGER
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: null
+- column_name: day_name
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: STRING
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: null
+- column_name: time_segment
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: STRING
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: null
+version: 1.0.0
+database_uuid: c99a4a96-fa09-4ccf-819a-44b234a5998c

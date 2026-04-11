@@ -564,3 +564,35 @@ SELECT
 FROM weekly_dow
 WINDOW w AS (PARTITION BY day_of_week_num ORDER BY week_start)
 ORDER BY day_of_week_num, week_start;
+
+
+-- Staffing Load Matrix (Avg Transaction Volume by Day & Hour)
+WITH hourly_stats AS (
+    SELECT 
+        DATE(datetime) AS tx_date,
+        CASE 
+            WHEN EXTRACT(DOW FROM datetime) = 0 THEN 7 
+            ELSE EXTRACT(DOW FROM datetime) 
+        END AS day_of_week_num,
+        EXTRACT(HOUR FROM datetime) AS tx_hour,
+        COUNT(DISTINCT transaction_id) AS transaction_count
+    FROM third_wave_coffee_shop
+    WHERE datetime >= '2025-07-01' AND datetime < '2025-10-01'
+    GROUP BY 1, 2, 3
+)
+SELECT
+    -- Ось X: часы с ведущим нулём для сортировки
+    LPAD(tx_hour::TEXT, 2, '0') || ':00' AS hour_label,
+    
+    day_of_week_num || '. ' || 
+    CASE day_of_week_num
+        WHEN 1 THEN 'Monday' WHEN 2 THEN 'Tuesday' WHEN 3 THEN 'Wednesday'
+        WHEN 4 THEN 'Thursday' WHEN 5 THEN 'Friday' WHEN 6 THEN 'Saturday'
+        WHEN 7 THEN 'Sunday'
+    END AS day_label,
+    
+    ROUND(AVG(transaction_count), 1) AS avg_transaction_load
+FROM hourly_stats
+GROUP BY tx_hour, day_of_week_num, hour_label, day_label
+ORDER BY day_of_week_num, tx_hour;
+

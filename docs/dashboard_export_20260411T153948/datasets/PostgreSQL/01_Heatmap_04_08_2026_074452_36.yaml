@@ -1,0 +1,84 @@
+table_name: 01_Heatmap 04/08/2026 07:44:52
+main_dttm_col: null
+description: null
+default_endpoint: null
+offset: 0
+cache_timeout: null
+catalog: postgres
+schema: public
+sql: "WITH hourly_stats AS (\n    SELECT \n        DATE(datetime) AS tx_date,\n  \
+  \      CASE \n            WHEN EXTRACT(DOW FROM datetime) = 0 THEN 7 \n        \
+  \    ELSE EXTRACT(DOW FROM datetime) \n        END AS day_of_week_num,\n       \
+  \ EXTRACT(HOUR FROM datetime) AS tx_hour,\n        COUNT(DISTINCT transaction_id)\
+  \ AS transaction_count\n    FROM third_wave_coffee_shop\n    WHERE datetime >= '2025-07-01'\
+  \ AND datetime < '2025-10-01'\n    GROUP BY 1, 2, 3\n)\nSELECT\n    -- \u041E\u0441\
+  \u044C X: \u0447\u0430\u0441\u044B \u0441 \u0432\u0435\u0434\u0443\u0449\u0438\u043C\
+  \ \u043D\u0443\u043B\u0451\u043C \u0434\u043B\u044F \u0441\u043E\u0440\u0442\u0438\
+  \u0440\u043E\u0432\u043A\u0438\n    LPAD(tx_hour::TEXT, 2, '0') || ':00' AS hour_label,\n\
+  \    day_of_week_num || '. ' || \n    CASE day_of_week_num\n        WHEN 1 THEN\
+  \ 'Monday' WHEN 2 THEN 'Tuesday' WHEN 3 THEN 'Wednesday'\n        WHEN 4 THEN 'Thursday'\
+  \ WHEN 5 THEN 'Friday' WHEN 6 THEN 'Saturday'\n        WHEN 7 THEN 'Sunday'\n  \
+  \  END AS day_label,\n    \n    ROUND(AVG(transaction_count), 1) AS avg_transaction_load\n\
+  FROM hourly_stats\nGROUP BY tx_hour, day_of_week_num, hour_label, day_label\nORDER\
+  \ BY day_of_week_num, tx_hour;"
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+normalize_columns: false
+always_filter_main_dttm: false
+folders: null
+uuid: 91c09158-d078-4d9b-ac06-c7d02cc3f93d
+metrics:
+- metric_name: count
+  verbose_name: COUNT(*)
+  metric_type: count
+  expression: COUNT(*)
+  description: null
+  d3format: null
+  currency: null
+  extra: null
+  warning_text: null
+columns:
+- column_name: avg_transaction_load
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: DECIMAL
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: null
+- column_name: day_label
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: STRING
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: null
+- column_name: hour_label
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: STRING
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: null
+version: 1.0.0
+database_uuid: c99a4a96-fa09-4ccf-819a-44b234a5998c

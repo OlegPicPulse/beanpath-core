@@ -1,0 +1,95 @@
+slice_name: transactions_dow_barchart
+description: null
+certified_by: null
+certification_details: null
+viz_type: echarts_timeseries_bar
+params:
+  datasource: 32__table
+  viz_type: echarts_timeseries_bar
+  slice_id: 170
+  matrixify_show_column_headers: true
+  matrixify_mode_columns: metrics
+  matrixify_dimension_selection_mode_columns: members
+  matrixify_dimension_columns:
+    dimension: ''
+    values: []
+  matrixify_topn_value_columns: 10
+  matrixify_topn_order_columns: desc
+  matrixify_show_row_labels: true
+  matrixify_mode_rows: metrics
+  matrixify_dimension_selection_mode_rows: members
+  matrixify_dimension_rows:
+    dimension: ''
+    values: []
+  matrixify_topn_value_rows: 10
+  matrixify_topn_order_rows: desc
+  matrixify_row_height: 300
+  matrixify_fit_columns_dynamically: true
+  matrixify_charts_per_row: 4
+  x_axis: time_segment
+  x_axis_sort_asc: true
+  metrics:
+  - aggregate: AVG
+    column:
+      advanced_data_type: null
+      certification_details: null
+      certified_by: null
+      column_name: total_checks
+      description: null
+      expression: ''
+      filterable: true
+      groupby: true
+      id: 825
+      is_certified: false
+      is_dttm: false
+      python_date_format: null
+      type: LONGINTEGER
+      type_generic: 0
+      uuid: 28b26fa0-7dc4-4774-9f8c-3da1fdb59783
+      verbose_name: null
+      warning_markdown: null
+    datasourceWarning: false
+    expressionType: SIMPLE
+    hasCustomLabel: false
+    label: AVG(total_checks)
+    optionName: metric_hyexkk71bto_nf33u8oxpdp
+    sqlExpression: null
+  groupby: []
+  adhoc_filters: []
+  order_desc: true
+  row_limit: 10000
+  truncate_metric: true
+  show_empty_columns: true
+  comparison_type: values
+  annotation_layers: []
+  forecastPeriods: 10
+  forecastInterval: 0.8
+  orientation: vertical
+  x_axis_title_margin: 15
+  y_axis_title_margin: 30
+  y_axis_title_position: Left
+  sort_series_type: sum
+  color_scheme: supersetColors
+  time_shift_color: true
+  only_total: true
+  show_legend: true
+  legendType: scroll
+  legendOrientation: top
+  x_axis_time_format: smart_date
+  xAxisLabelInterval: auto
+  y_axis_format: SMART_NUMBER
+  y_axis_bounds:
+  - null
+  - null
+  truncateXAxis: true
+  rich_tooltip: true
+  showTooltipTotal: true
+  tooltipTimeFormat: smart_date
+  extra_form_data: {}
+  dashboards:
+  - 17
+query_context: '{"datasource":{"id":32,"type":"table"},"force":false,"queries":[{"filters":[],"extras":{"having":"","where":""},"applied_time_extras":{},"columns":[{"columnType":"BASE_AXIS","sqlExpression":"time_segment","label":"time_segment","expressionType":"SQL","isColumnReference":true}],"metrics":[{"aggregate":"AVG","column":{"advanced_data_type":null,"certification_details":null,"certified_by":null,"column_name":"total_checks","description":null,"expression":"","filterable":true,"groupby":true,"id":825,"is_certified":false,"is_dttm":false,"python_date_format":null,"type":"LONGINTEGER","type_generic":0,"uuid":"28b26fa0-7dc4-4774-9f8c-3da1fdb59783","verbose_name":null,"warning_markdown":null},"datasourceWarning":false,"expressionType":"SIMPLE","hasCustomLabel":false,"label":"AVG(total_checks)","optionName":"metric_hyexkk71bto_nf33u8oxpdp","sqlExpression":null}],"orderby":[[{"aggregate":"AVG","column":{"advanced_data_type":null,"certification_details":null,"certified_by":null,"column_name":"total_checks","description":null,"expression":"","filterable":true,"groupby":true,"id":825,"is_certified":false,"is_dttm":false,"python_date_format":null,"type":"LONGINTEGER","type_generic":0,"uuid":"28b26fa0-7dc4-4774-9f8c-3da1fdb59783","verbose_name":null,"warning_markdown":null},"datasourceWarning":false,"expressionType":"SIMPLE","hasCustomLabel":false,"label":"AVG(total_checks)","optionName":"metric_hyexkk71bto_nf33u8oxpdp","sqlExpression":null},false]],"annotation_layers":[],"row_limit":10000,"series_columns":[],"series_limit":0,"group_others_when_limit_reached":false,"order_desc":true,"url_params":{},"custom_params":{},"custom_form_data":{},"time_offsets":[],"post_processing":[{"operation":"pivot","options":{"index":["time_segment"],"columns":[],"aggregates":{"AVG(total_checks)":{"operator":"mean"}},"drop_missing_columns":false}},{"operation":"flatten"}]}],"form_data":{"datasource":"32__table","viz_type":"echarts_timeseries_bar","slice_id":170,"matrixify_show_column_headers":true,"matrixify_mode_columns":"metrics","matrixify_dimension_selection_mode_columns":"members","matrixify_dimension_columns":{"dimension":"","values":[]},"matrixify_topn_value_columns":10,"matrixify_topn_order_columns":"desc","matrixify_show_row_labels":true,"matrixify_mode_rows":"metrics","matrixify_dimension_selection_mode_rows":"members","matrixify_dimension_rows":{"dimension":"","values":[]},"matrixify_topn_value_rows":10,"matrixify_topn_order_rows":"desc","matrixify_row_height":300,"matrixify_fit_columns_dynamically":true,"matrixify_charts_per_row":4,"x_axis":"time_segment","x_axis_sort_asc":true,"metrics":[{"aggregate":"AVG","column":{"advanced_data_type":null,"certification_details":null,"certified_by":null,"column_name":"total_checks","description":null,"expression":"","filterable":true,"groupby":true,"id":825,"is_certified":false,"is_dttm":false,"python_date_format":null,"type":"LONGINTEGER","type_generic":0,"uuid":"28b26fa0-7dc4-4774-9f8c-3da1fdb59783","verbose_name":null,"warning_markdown":null},"datasourceWarning":false,"expressionType":"SIMPLE","hasCustomLabel":false,"label":"AVG(total_checks)","optionName":"metric_hyexkk71bto_nf33u8oxpdp","sqlExpression":null}],"groupby":[],"adhoc_filters":[],"order_desc":true,"row_limit":10000,"truncate_metric":true,"show_empty_columns":true,"comparison_type":"values","annotation_layers":[],"forecastPeriods":10,"forecastInterval":0.8,"orientation":"vertical","x_axis_title_margin":15,"y_axis_title_margin":30,"y_axis_title_position":"Left","sort_series_type":"sum","color_scheme":"supersetColors","time_shift_color":true,"only_total":true,"show_legend":true,"legendType":"scroll","legendOrientation":"top","x_axis_time_format":"smart_date","xAxisLabelInterval":"auto","y_axis_format":"SMART_NUMBER","y_axis_bounds":[null,null],"truncateXAxis":true,"rich_tooltip":true,"showTooltipTotal":true,"tooltipTimeFormat":"smart_date","extra_form_data":{},"dashboards":[17],"force":false,"result_format":"json","result_type":"full"},"result_format":"json","result_type":"full"}'
+cache_timeout: null
+uuid: c0f319e0-b730-4284-80d8-61952d2fa703
+version: 1.0.0
+dataset_uuid: 2d49fd7a-791d-42d9-a219-c7111d0993b9
