@@ -131,4 +131,54 @@ FROM (
 	ORDER BY transaction_id
 	) t;
 
-	
+
+-- МОНИТОРИНГ ВОЗВРАТОВ (когортный анализ)
+SELECT 
+    category,
+    COUNT(*) AS total_orders,
+    -- Считаем только те строки, где статус 'returned'
+    COUNT(*) FILTER (WHERE status = 'returned') AS returned_orders,
+    -- Рассчитываем процент
+    ROUND(
+        COUNT(*) FILTER (WHERE status = 'returned')::numeric / COUNT(*) * 100, 
+        2
+    ) AS return_rate_percent
+FROM orders
+GROUP BY category
+ORDER BY return_rate_percent DESC;
+
+/*
+GROUP BY: Позволяет моментально переключить аналитику. 
+Просто замените category на brand или region, чтобы получить срез по другим признакам.
+*/	
+
+-- Добавим фильтрацию по дате (только последний месяц)
+`WHERE order_date >= CURRENT_DATE - INTERVAL '1 month'`
+
+`WHERE status IN ('returned', 'delivered', 'in_transit')`
+
+SELECT 
+    category,
+    COUNT(*) AS total_orders,
+    -- Заменяем FILTER на CASE WHEN
+    SUM(
+        CASE 
+            WHEN status = 'returned' THEN 1 
+            ELSE 0 
+        END
+    ) AS returned_orders,
+    -- Процент возвратов 
+    ROUND(
+        SUM(
+            CASE 
+                WHEN status = 'returned' THEN 1 
+                ELSE 0 
+            END
+        )::numeric / COUNT(*) * 100, 
+        2
+    ) AS return_rate_percent
+FROM orders
+WHERE status IN ('returned', 'delivered', 'in_transit')  
+GROUP BY category
+ORDER BY return_rate_percent DESC;
+
