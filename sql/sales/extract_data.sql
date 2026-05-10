@@ -102,70 +102,64 @@ FROM (
 
 
 -- Концентрация выручки на топ-напитках
-WITH drink_revenue AS (
-    SELECT coffee_name, SUM(drink_price) AS revenue
-    FROM third_wave_coffee_shop
-    GROUP BY coffee_name
-),
-top3 AS (
-    SELECT coffee_name FROM drink_revenue ORDER BY revenue DESC LIMIT 3
+WITH revenue_stats AS (
+	SELECT
+		coffee_name,
+		SUM(drink_price) AS revenue,
+		RANK() OVER (ORDER BY SUM(drink_price) DESC) as rnk
+	FROM third_wave_coffee_shop
+	GROUP BY coffee_name
 )
 SELECT
-    CASE WHEN coffee_name IN (SELECT coffee_name FROM top3) THEN coffee_name ELSE 'Other' END AS category,
-    ROUND(SUM(drink_price), 2) AS revenue,
-    ROUND(100.0 * SUM(drink_price) / (SELECT SUM(drink_price) FROM coffee_shop_sales), 2) AS share_percent
-FROM third_wave_coffee_shop
+	CASE WHEN rnk <= 3 THEN coffee_name ELSE 'other' END AS category,
+	ROUND(SUM(revenue), 2) AS revenue,
+	ROUND(100.0 * SUM(revenue) / SUM(SUM(revenue)) OVER (), 2) AS share_percent
+FROM revenue_stats 
 GROUP BY category
 ORDER BY revenue DESC;
 
-
 -- Структура оплат
 WITH tx AS (
-    SELECT transaction_id, MAX(total_cost) AS total_cost, MIN(payment_method) AS payment_method
-    FROM third_wave_coffee_shop
-    GROUP BY transaction_id
+	SELECT DISTINCT ON (transaction_id)
+			transaction_id, total_cost, payment_method
+	FROM third_wave_coffee_shop
+	ORDER BY transaction_id
 )
 SELECT
     payment_method,
     COUNT(*) AS total_orders,
     ROUND(SUM(total_cost), 2) AS revenue,
-    ROUND(100.0 * SUM(total_cost) / (SELECT SUM(total_cost) FROM tx), 2) AS percent_of_total
+    ROUND(100.0 * SUM(total_cost) / SUM(SUM(total_cost)) OVER (), 2) AS percent_of_total
 FROM tx
 GROUP BY payment_method
 ORDER BY revenue DESC;
 
 
-WITH tx_sizes AS (
-    -- Считаем количество позиций (напитков) в каждой транзакции
-    SELECT
-        transaction_id,
-        COUNT(*) AS n_items_per_tx
-    FROM third_wave_coffee_shop
-    GROUP BY transaction_id
-),
-dist AS (
-    -- Считаем частоту каждого значения n_items_per_tx
-    SELECT
-        n_items_per_tx AS n_items,
-        COUNT(*) AS orders_count
-    FROM tx_sizes
-    GROUP BY n_items_per_tx
-),
-total AS (
-    SELECT SUM(orders_count) AS total_orders FROM dist
+-- Размер корзины: сколько напитков люди обычно покупают за один раз
+WITH tx_data AS (
+	SELECT 
+		transaction_id,
+		COUNT(*) AS n_items,
+		MAX(total_cost) AS tx_revenue
+	FROM third_wave_coffee_shop
+	GROUP BY transaction_id
 )
 SELECT
-    d.n_items,
-    d.orders_count,
-    ROUND((d.orders_count::NUMERIC / t.total_orders) * 100, 2) AS percent,
-    ROUND(
-        (SUM(d.orders_count) OVER (ORDER BY d.n_items))::NUMERIC
-        / t.total_orders * 100,
-        2
-    ) AS cumulative_percent
-FROM dist d
-CROSS JOIN total t
-ORDER BY d.n_items;
+	n_items,
+	COUNT(*) AS order_count,
+	ROUND(AVG(tx_revenue), 2) AS avg_check,	-- Средний чек для группы
+	ROUND(
+		PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY tx_revenue)::NUMERIC,
+		2
+	) AS median_check,
+	ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) AS percent,
+	-- Доля этой группы в общей выручке кофейни
+	ROUND(100.0 * SUM(tx_revenue) / SUM(SUM(tx_revenue)) OVER (), 2) AS revenue_share,
+	ROUND(100.0 * SUM(COUNT(*)) OVER (ORDER BY n_items) / SUM(COUNT(*)) OVER (), 2) AS cumulative_percent
+FROM tx_data
+GROUP BY n_items
+ORDER BY n_items;
+
 
 
 -- Топ-10 клиентов по общим тратам
