@@ -108,7 +108,6 @@ beanpath (beanpath-core)/
 
 ![Распределение заказов по количеству напитков](docs/figures/orders_count_inver.png)
 ![Визуализация распределения цен (drink_price и total_cost)](docs/figures/01_coffee_revenue_inver.png)
-![Визуализация распределения цен (drink_price и total_cost)](docs/figures/02_coffee_revenue.png)
 ![Количество проданных напитков, выручка](docs/figures/piechart_revenue_share_inver.png)
 
 #### **Ценовые распределения**
