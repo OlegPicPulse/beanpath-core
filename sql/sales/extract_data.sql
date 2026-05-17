@@ -343,42 +343,40 @@ limit 10;
 WITH product_revenue AS (
     SELECT
         coffee_name,
-        SUM(drink_price) AS revenue
+        SUM(drink_price::NUMERIC) AS revenue
     FROM third_wave_coffee_shop
     GROUP BY coffee_name
 ),
-total_revenue AS (
-    SELECT SUM(revenue) AS total_rev
-    FROM product_revenue
-),
-abc_prep AS (
-    SELECT
-        pr.coffee_name,
-        pr.revenue,
-        round((pr.revenue::NUMERIC / tr.total_rev), 6) AS revenue_share  -- приведение к NUMERIC для точности
-    FROM product_revenue pr
-    CROSS JOIN total_revenue tr
-),
-abc_final AS (
+product_totals AS (
     SELECT
         coffee_name,
         revenue,
-        revenue_share,
-        round(SUM(revenue_share) OVER (ORDER BY revenue DESC ROWS UNBOUNDED PRECEDING), 6) AS cumulative_share
-    FROM abc_prep
+        SUM(revenue) OVER () AS total_revenue
+    FROM product_revenue
+    WHERE revenue > 0  -- исключаем нулевые
+),
+abc_calculation AS (
+    SELECT
+        coffee_name,
+        revenue,
+        revenue / total_revenue AS revenue_share,
+        SUM(revenue) OVER (ORDER BY revenue DESC) 
+            / total_revenue AS cumulative_share
+    FROM product_totals
 )
 SELECT
     coffee_name,
     revenue,
-    revenue_share,
-    cumulative_share,
+    ROUND(revenue_share::NUMERIC, 4) AS revenue_share,
+    ROUND(cumulative_share::NUMERIC, 4) AS cumulative_share,
     CASE
-        WHEN cumulative_share <= 0.8 THEN 'A'
-        WHEN cumulative_share <= 0.95 THEN 'B'
-        ELSE 'C'
+        WHEN cumulative_share <= 0.80 THEN 'A'  -- top 80%
+        WHEN cumulative_share <= 0.95 THEN 'B'  -- next 15%
+        ELSE 'C'                                -- bottom 5%
     END AS abc_class
-FROM abc_final
+FROM abc_calculation
 ORDER BY revenue DESC;
+
 
 -- Временной анализ (нагрузка и планирование персонала)
 select
