@@ -606,20 +606,40 @@ ORDER BY day_of_week_num, week_start;
 WITH hourly_stats AS (
     SELECT 
         DATE(datetime) AS tx_date,
-        CASE 
-            WHEN EXTRACT(DOW FROM datetime) = 0 THEN 7 
-            ELSE EXTRACT(DOW FROM datetime) 
-        END AS day_of_week_num,
+        EXTRACT(ISODOW FROM datetime) AS day_of_week_num,
         EXTRACT(HOUR FROM datetime) AS tx_hour,
+        EXTRACT(WEEK FROM datetime) AS week_num,
         COUNT(DISTINCT transaction_id) AS transaction_count
     FROM third_wave_coffee_shop
     WHERE datetime >= '2025-07-01' AND datetime < '2025-10-01'
-    GROUP BY 1, 2, 3
+    GROUP BY 1, 2, 3, 4
+),
+with_prev_week AS (
+    SELECT 
+        *,
+        LAG(transaction_count) OVER (
+            PARTITION BY day_of_week_num, tx_hour 
+            ORDER BY week_num
+        ) AS prev_week_count
+    FROM hourly_stats
+),
+wow_comparison AS (
+    SELECT 
+        *,
+        ROUND(
+            (transaction_count - prev_week_count) / 
+            NULLIF(prev_week_count, 0) * 100, 
+            1
+        ) AS wow_change_pct,
+        CASE 
+            WHEN transaction_count > prev_week_count THEN 'UP'
+            WHEN transaction_count < prev_week_count THEN 'DOWN'
+            ELSE 'FLAT'
+        END AS trend_direction
+    FROM with_prev_week
 )
 SELECT
-    -- Ось X: часы с ведущим нулём для сортировки
     LPAD(tx_hour::TEXT, 2, '0') || ':00' AS hour_label,
-    
     day_of_week_num || '. ' || 
     CASE day_of_week_num
         WHEN 1 THEN 'Monday' WHEN 2 THEN 'Tuesday' WHEN 3 THEN 'Wednesday'
@@ -627,8 +647,21 @@ SELECT
         WHEN 7 THEN 'Sunday'
     END AS day_label,
     
-    ROUND(AVG(transaction_count), 1) AS avg_transaction_load
-FROM hourly_stats
-GROUP BY tx_hour, day_of_week_num, hour_label, day_label
+    -- Основные метрики нагрузки
+    ROUND(AVG(transaction_count), 1) AS avg_receipts,
+    ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY transaction_count)::numeric, 1) AS median_receipts,
+    ROUND(PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY transaction_count)::numeric, 1) AS p90_receipts,
+    
+    -- Трендовые метрики
+    ROUND(AVG(wow_change_pct), 1) AS avg_wow_growth_pct,
+    ROUND(
+        COUNT(CASE WHEN trend_direction = 'UP' THEN 1 END) * 100.0 / 
+        NULLIF(COUNT(trend_direction), 0), 
+        1
+    ) AS pct_weeks_growing,
+    COUNT(*) AS data_points_with_trend
+FROM wow_comparison
+WHERE prev_week_count IS NOT NULL
+GROUP BY tx_hour, day_of_week_num
 ORDER BY day_of_week_num, tx_hour;
 
