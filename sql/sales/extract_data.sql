@@ -665,3 +665,32 @@ WHERE prev_week_count IS NOT NULL
 GROUP BY tx_hour, day_of_week_num
 ORDER BY day_of_week_num, tx_hour;
 
+
+-- Gap analysis
+WITH aggregated_scans AS (
+    SELECT 
+        sku, 
+        SUM(qty) AS fact_qty
+    FROM scanner_scans
+    GROUP BY sku
+),
+inventory_analysis AS (
+    SELECT 
+        c.sku,
+        c.item_name,
+        COALESCE(w.system_qty, 0) AS system_qty,
+        COALESCE(a.fact_qty, 0) AS fact_qty,
+        COALESCE(a.fact_qty, 0) - COALESCE(w.system_qty, 0) AS diff_qty,
+        (COALESCE(a.fact_qty, 0) - COALESCE(w.system_qty, 0)) * COALESCE(w.purchase_price, 0) AS financial_impact_rub,
+        CASE 
+            WHEN COALESCE(a.fact_qty, 0) - COALESCE(w.system_qty, 0) = 0 THEN 'OK'
+            WHEN COALESCE(a.fact_qty, 0) - COALESCE(w.system_qty, 0) < 0 THEN 'Недостача'
+            ELSE 'Излишек'
+        END AS status
+    FROM sku_catalog c
+    LEFT JOIN wms_inventory w ON c.sku = w.sku
+    LEFT JOIN aggregated_scans a ON c.sku = a.sku
+)
+SELECT *
+FROM inventory_analysis
+ORDER BY ABS(financial_impact_rub) DESC;
